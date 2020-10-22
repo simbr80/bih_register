@@ -23,7 +23,7 @@ razpon = "od" + str(razpon_od) + "do" + str(razpon_do)
 
 # PREBEREM mbs za parsanje
 #df_csv_ms = pd.read_csv("vse_mbs.csv", header=0, sep=";")
-df_csv_ms = pd.read_csv("tedenski_izpisi_tomaz\merge_data.csv", header=0, sep=";")
+df_csv_ms = pd.read_csv("tedenski_izpisi_tomaz\merge_data_manjkajoci_10_2020.csv", header=0, sep=";")
 mbs = list(df_csv_ms["mbs"])
 #ostevilcim listo
 mbs = list(enumerate(mbs, 1))
