@@ -7,6 +7,7 @@ import time
 import dateutil.parser
 import xml.etree.cElementTree as ET
 import datetime
+import re
 
 # ŠTOPARICA
 start = time.time()
@@ -92,17 +93,22 @@ while start_date <= end_date:
             if td.a:
                 lista_pos_zadetek.append(td.text)
                 lista_pos_zadetek.append(td.a["href"])
+                url = td.a["href"]
+                fbih_id = re.search("P13_NAZIV:(\d+)%", url)
+                if fbih_id:
+                    fbih_id =  fbih_id.group(1)
+                lista_pos_zadetek.append(fbih_id)
             else:
                 lista_pos_zadetek.append(td.text)
 
-        lista_pos_zadetek[5] = datetime.datetime.strptime(lista_pos_zadetek[5], '%Y-%m-%d').date()
+        lista_pos_zadetek[6] = datetime.datetime.strptime(lista_pos_zadetek[6], '%Y-%m-%d').date()
         lista_zadetkov.append(lista_pos_zadetek)
 
 
     start_date += delta
 
-df = pd.DataFrame.from_records(lista_zadetkov, columns = ['MBS', 'Naziv', 'Link', 'Naziv_kratki', 'Naslov', 'Datum'])
-
+df = pd.DataFrame.from_records(lista_zadetkov, columns = ['MBS', 'Naziv', 'Link', "FBIH_id", 'Naziv_kratki', 'Naslov', 'Datum'])
+df = df[['MBS', 'Naziv', 'Naziv_kratki', 'Naslov', 'Datum', "FBIH_id", 'Link']]
 
 df.to_csv("xml/" + razpon + "_vsa_leta.csv", sep=';', encoding='utf-8')
 
