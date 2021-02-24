@@ -23,10 +23,9 @@ razpon = "od" + str(razpon_od) + "do" + str(razpon_do)
 
 # PREBEREM mbs za parsanje
 #df_csv_ms = pd.read_csv("vse_mbs.csv", header=0, sep=";")
-df_csv_ms = pd.read_csv("tedenski_izpisi_tomaz\merge_data_manjkajoci_10_2020.csv", header=0, sep=";")
-mbs = list(df_csv_ms["mbs"])
-#ostevilcim listo
-mbs = list(enumerate(mbs, 1))
+df = pd.read_csv("xml/od2007-01-01do2020-12-20_vsa_leta.csv", header=0, sep=";", index_col=0)
+df = df.set_index("FBIH_id")
+df = df[['MBS', 'Naziv', 'Naziv_kratki', 'Naslov', 'Datum', 'Link']]
 
 # odprem file za morebitne napake pri deležih ali generalne napake
 error_csv = open("xml/" + razpon + "error.csv", "w", encoding="utf-8")
@@ -39,13 +38,23 @@ soup = BeautifulSoup(r.text, "html.parser")
 sifra = str(soup.find(id="pInstance")['value'])
 #print(sifra)
 
+counter = 0
+
 root = ET.Element('Subjekti')
 
-for i in mbs[razpon_od:razpon_do]:
-    zap_st = str(i[0])
+for i in df.iloc[razpon_od:razpon_do].itertuples():
+    counter = counter + 1
+    zap_st = str(counter)
     mat_st = str(i[1])
+    fbih_id = str(i[0])
+    datum = str(i[5])
 
     print("Obdelujem zap.st.: " + zap_st + "\n")
+
+    regex = r"183:13:(\d+)"
+    osnovni_link = i[6]
+    subst = "183:13:" + sifra
+    novi_link = re.sub(regex, subst, osnovni_link, 0, re.MULTILINE)
 
     try:
         #mat_st = "65-01-0542-10"
@@ -55,6 +64,8 @@ for i in mbs[razpon_od:razpon_do]:
 
         subjekt = ET.SubElement(root, "Subjekt")
         subjekt.attrib['MBS'] = mat_st
+        subjekt.attrib['FBIH_ID'] = fbih_id
+        subjekt.attrib['datum'] = datum
 
         osnovni_podatki = ET.SubElement(subjekt, "Osnovni_podatki")
         ustanovitelji = ET.SubElement(subjekt, "Ustanovitelji")
@@ -66,28 +77,10 @@ for i in mbs[razpon_od:razpon_do]:
         zunanja_trgovina = ET.SubElement(subjekt, "Zunanja_trgovina")
         opombe = ET.SubElement(subjekt, "Opombe")
 
-        payload = {'p_request': 'APPLICATION_PROCESS=OSNOVNA_PRETRAGA_PARAMS', 'p_instance': sifra, 'p_flow_id': '183', 'p_flow_step_id': '0', 'x01': '-1', 'x02': '1', 'x03': mat_st, 'x04': ''}
-        url_2 = "https://bizreg.pravosudje.ba/pls/apex/wwv_flow.show"
-        r_2 = s.post(url_2, data=payload, verify=False)
-        r_2.encoding = "utf-8"
-        soup_2 = BeautifulSoup(r_2.text, "html.parser")
-
-        url_3 = "https://bizreg.pravosudje.ba/pls/apex/f?p=183:30:" + sifra + "::NO:RP:P30_FIRSTTIME:TRUE"
-        r_3= s.get(url_3, verify=False)
-        r_3.encoding = "utf-8"
-        soup_3 = BeautifulSoup(r_3.text, "html.parser")
-        ni_zadetka = soup_3.find(text=re.compile("Nema podataka."))
-
-        if ni_zadetka:
-            print("Ni podatka!")
-            error_csv.write("Ni zadetaka na poziciji: " + zap_st + ": " + mat_st + "\n")
-            continue
 
         #OSNOVNI PODATKI
 
-        subjekt.attrib['zadnja_sprememba'] = soup_3.find_all(class_="t15dataalt")[4].text
-
-        url_4 = "https://bizreg.pravosudje.ba/pls/apex/" + soup_3.find_all(class_="t15dataalt")[1].find("a")["href"]
+        url_4 = "https://bizreg.pravosudje.ba/pls/apex/" + novi_link
 
         r_4= s.get(url_4, verify=False)
         r_4.encoding = "utf-8"

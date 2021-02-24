@@ -91,15 +91,23 @@ while start_date <= end_date:
         td_zadetki = tr.find_all("td")
         for td in td_zadetki:
             if td.a:
-                lista_pos_zadetek.append(td.text)
-                lista_pos_zadetek.append(td.a["href"])
+                text = td.text.strip(' \t\n\r')
+                text = text.replace('\n','').replace('\r','')
+                lista_pos_zadetek.append(text)
+                href = td.a["href"].strip(' \t\n\r')
+                href = href.replace('\n','').replace('\r','')
+                lista_pos_zadetek.append(href)
                 url = td.a["href"]
                 fbih_id = re.search("P13_NAZIV:(\d+)%", url)
                 if fbih_id:
                     fbih_id =  fbih_id.group(1)
+                    fbih_id = fbih_id.strip(' \t\n\r')
+                    fbih_id = fbih_id.replace('\n','').replace('\r','')
                 lista_pos_zadetek.append(fbih_id)
             else:
-                lista_pos_zadetek.append(td.text)
+                text = td.text.strip(' \t\n\r')
+                text = text.replace('\n', '').replace('\r','')
+                lista_pos_zadetek.append(text)
 
         lista_pos_zadetek[6] = datetime.datetime.strptime(lista_pos_zadetek[6], '%Y-%m-%d').date()
         lista_zadetkov.append(lista_pos_zadetek)
