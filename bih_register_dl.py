@@ -23,7 +23,7 @@ razpon = "od" + str(razpon_od) + "do" + str(razpon_do)
 
 # PREBEREM mbs za parsanje
 #df_csv_ms = pd.read_csv("vse_mbs.csv", header=0, sep=";")
-df = pd.read_csv("xml/od2007-01-01do2020-12-20_vsa_leta.csv", header=0, sep=";", index_col=0)
+df = pd.read_csv("xml\od2007-01-01do2021-04-04_vsa_leta.csv", header=0, sep=";", index_col=0)
 df = df.set_index("FBIH_id")
 df = df[['MBS', 'Naziv', 'Naziv_kratki', 'Naslov', 'Datum', 'Link']]
 
