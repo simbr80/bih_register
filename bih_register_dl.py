@@ -6,6 +6,8 @@ import traceback
 import time
 import dateutil.parser
 import xml.etree.cElementTree as ET
+from datetime import date
+from pathlib import Path
 
 
 # ŠTOPARICA
@@ -23,7 +25,7 @@ razpon = "od" + str(razpon_od) + "do" + str(razpon_do)
 
 # PREBEREM mbs za parsanje
 #df_csv_ms = pd.read_csv("vse_mbs.csv", header=0, sep=";")
-df = pd.read_csv("xml\od2007-01-01do2021-04-04_vsa_leta.csv", header=0, sep=";", index_col=0)
+df = pd.read_csv("xml\od2007-01-01do2023-12-31_vsa_leta.csv", header=0, sep=";", index_col=0)
 df = df.set_index("FBIH_id")
 df = df[['MBS', 'Naziv', 'Naziv_kratki', 'Naslov', 'Datum', 'Link']]
 
@@ -348,8 +350,13 @@ for i in df.iloc[razpon_od:razpon_do].itertuples():
 
 error_csv.close()
 
+# Naredim folder z imenom danasnji datum
+iso_danes = date.today().isoformat()
+dir_name = Path(iso_danes)
+dir_name.mkdir(parents=True, exist_ok=True)
+
 tree = ET.ElementTree(root)
-tree.write("xml/" + razpon + '.xml', encoding='utf-8', xml_declaration=True)
+tree.write(f"{str(dir_name)}/{razpon}.xml", encoding='utf-8', xml_declaration=True)
 
 # USTAVIM ŠTOPARICO
 stop = time.time()
